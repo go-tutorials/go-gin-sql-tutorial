@@ -1,0 +1,21 @@
+server:
+  name: go-postgresql-gin-rest-api
+  port: 8080
+
+sql:
+  driver: postgres
+  data_source_name: postgres://postgres:admin@123456@localhost:5432/demogo?sslmode=disable
+  # postgres://username:password@host:5432/database?sslmode=disable
+log:
+  level: info
+  duration: duration
+  map:
+    time: "@timestamp"
+    msg: message
+
+middleware:
+  log: true
+  skips: /health
+  request: body
+  response: response
+  size: size
