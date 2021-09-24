@@ -4,7 +4,7 @@
 #### Clone the repository
 ```shell
 git clone https://github.com/go-tutorials/go-gin-sql-rest-api.git
-cd go-sql-rest-api
+cd go-gin-sql-rest-api
 ```
 
 #### To run the application
@@ -34,6 +34,7 @@ To check if the service is available.
     }
 }
 ```
+
 
 ## API design for users
 #### *Resource:* users
@@ -125,82 +126,96 @@ DELETE /users/wolverine
 - [core-go/config](https://github.com/core-go/config): to load the config file, and merge with other environments (SIT, UAT, ENV)
 - [core-go/log](https://github.com/core-go/log): log and log middleware
 
-### core-go/health
-To check if the service is available, refer to [core-go/health](https://github.com/core-go/health)
-#### *Request:* GET /health
-#### *Response:*
-```json
-{
-    "status": "UP",
-    "details": {
-        "sql": {
-            "status": "UP"
-        }
-    }
-}
-```
-To create health checker, and health handler
-```go
-    db, err := sql.Open(conf.Driver, conf.DataSourceName)
-    if err != nil {
-        return nil, err
-    }
-
-    sqlChecker := s.NewSqlHealthChecker(db)
-    healthHandler := health.NewHealthHandler(sqlChecker)
-```
-
-To handler routing
-```go
-    r := mux.NewRouter()
-    r.HandleFunc("/health", healthHandler.Check).Methods("GET")
-```
-
 ### core-go/config
 To load the config from "config.yml", in "configs" folder
 ```go
-package main
+server:
+  name: go-postgresql-gin-rest-api
+  port: 8080
 
-import "github.com/core-go/config"
+sql:
+  driver: postgres
+  data_source_name: postgres://postgres:admin@123456@localhost:5432/demogo?sslmode=disable
+  # postgres://username:password@host:5432/database?sslmode=disable
+log:
+  level: info
+  duration: duration
+  map:
+    time: "@timestamp"
+    msg: message
 
-type Root struct {
-    DB DatabaseConfig `mapstructure:"db"`
-}
-
-type DatabaseConfig struct {
-    Driver         string `mapstructure:"driver"`
-    DataSourceName string `mapstructure:"data_source_name"`
-}
-
-func main() {
-    var conf Root
-    err := config.Load(&conf, "configs/config")
-    if err != nil {
-        panic(err)
-    }
-}
+middleware:
+  log: true
+  skips: /health
+  request: body
+  response: response
+  size: size
 ```
 
 ### core-go/log *&* core-go/middleware
 ```go
+package main
+
 import (
-    "github.com/core-go/config"
-    "github.com/core-go/log"
-    m "github.com/core-go/middleware"
-    "github.com/gorilla/mux"
+	"bytes"
+	"context"
+	"fmt"
+	"github.com/core-go/config"
+	sv "github.com/core-go/service"
+	"github.com/gin-gonic/gin"
+	"net/http"
+
+	"go-service/internal/app"
 )
 
 func main() {
-    var conf app.Root
-    config.Load(&conf, "configs/config")
+	var conf app.Root
+	er1 := config.Load(&conf, "configs/config")
+	if er1 != nil {
+		panic(er1)
+	}
 
-    r := mux.NewRouter()
+	g := gin.New()
 
-    log.Initialize(conf.Log)
-    r.Use(m.BuildContext)
-    logger := m.NewStructuredLogger()
-    r.Use(m.Logger(conf.MiddleWare, log.InfoFields, logger))
-    r.Use(m.Recover(log.ErrorMsg))
+	g.Use(gin.Logger())
+
+	g.Use(gin.Recovery())
+
+	g.Use(ginBodyLogMiddleware())
+
+	er2 := app.Route(g , context.Background(), conf)
+	if er2 != nil {
+		panic(er2)
+	}
+
+	fmt.Println(sv.ServerInfo(conf.Server))
+	if er3 := http.ListenAndServe(sv.Addr(conf.Server.Port), g); er3 != nil {
+		fmt.Println(er3.Error())
+	}
+}
+
+type bodyLogWriter struct {
+	gin.ResponseWriter
+	body *bytes.Buffer
+}
+
+func (w bodyLogWriter) Write(b []byte) (int, error) {
+	w.body.Write(b)
+	return w.ResponseWriter.Write(b)
+}
+
+func (w bodyLogWriter) WriteString(s string) (int, error) {
+	w.body.WriteString(s)
+	return w.ResponseWriter.WriteString(s)
+}
+
+func ginBodyLogMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		blw := &bodyLogWriter{body: bytes.NewBufferString("\n"), ResponseWriter: c.Writer}
+		c.Writer = blw
+		c.Next()
+		fmt.Println("Response body: " + blw.body.String())
+	}
 }
 ```
 To configure to ignore the health check, use "skips":
