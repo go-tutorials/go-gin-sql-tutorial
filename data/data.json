@@ -1,5 +1,7 @@
 [
-    {"id": "ironman", "username": "tony.stark", "email": "tony.stark@gmail.com", "phone": "0987654321", "dateOfBirth": "1963-03-25T00:00:00+07:00"},
-    {"id": "spiderman", "username": "peter.parker", "email": "peter.parker@gmail.com", "phone": "0987654321", "dateOfBirth": "1962-08-25T00:00:00+07:00"},
-    {"id": "wolverine", "username": "james.howlett", "email": "james.howlett@gmail.com", "phone": "0987654321", "dateOfBirth": "1974-11-16T00:00:00+07:00"}
+  {"id": "001", "username": "user01", "active": true, "locked": false, "dateOfBirth": "2009-12-31T23:59:59.999+07:00", "email": "test@gmail.com", "url": "http://test.com", "phone": "0987654321"},
+  {"id": "002", "username": "user01", "active": false, "locked": false, "dateOfBirth": "2009-12-31T23:59:59.999+07:00", "email": "test@gmail.com", "url": "http://test.com", "phone": "0987654321"},
+  {"id": "003", "username": "user01", "active": false, "locked": false, "dateOfBirth": "2009-12-31T23:59:59.999+07:00", "email": "test", "url": "test", "phone": "abcd"},
+  {"id": "004", "username": "user01", "active": false, "locked": false, "dateOfBirth": "2009-12-31T23:59:59.999+07:00", "phone": "abcd"},
+  {"id": "005", "username": "user01", "active": false, "locked": false, "dateOfBirth": "2009-12-31T23:59:59.999+07:00", "phone": ""}
 ]
