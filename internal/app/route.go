@@ -29,6 +29,7 @@ func Route(g *gin.Engine, ctx context.Context, root Root) error {
 		userPath.PUT("/:id", app.UserHandler.Update)
 		userPath.PATCH("/:id", app.UserHandler.Patch)
 		userPath.DELETE("/:id", app.UserHandler.Delete)
+		userPath.POST("/search", app.UserHandler.Search)
 	}
 
 	//r.HandleFunc(userPath+"/{id}", app.UserHandler.Load).Methods(GET)

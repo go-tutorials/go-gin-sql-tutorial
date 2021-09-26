@@ -4,7 +4,7 @@ server:
 
 sql:
   driver: postgres
-  data_source_name: postgres://postgres:admin@123456@localhost:5432/demogo?sslmode=disable
+  data_source_name: postgres://postgres:admin@123456@localhost:5432/postgres?sslmode=disable
   # postgres://username:password@host:5432/database?sslmode=disable
 log:
   level: info
