@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/core-go/health/server"
 	"github.com/core-go/mq/config"
-	"sub-mongo/internal/app"
+	"go-service/internal/app"
 )
 
 func main() {
