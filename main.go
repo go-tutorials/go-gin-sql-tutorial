@@ -1,15 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"github.com/core-go/config"
-	sv "github.com/core-go/service"
-	"github.com/gin-gonic/gin"
-	"net/http"
-
+	"github.com/gorilla/mux"
 	"go-service/internal/app"
+	"net/http"
+	"strconv"
 )
 
 func main() {
@@ -19,45 +17,20 @@ func main() {
 		panic(er1)
 	}
 
-	g := gin.New()
+	r := mux.NewRouter()
 
-	g.Use(gin.Logger())
-
-	g.Use(gin.Recovery())
-
-	g.Use(ginBodyLogMiddleware())
-
-	er2 := app.Route(g, context.Background(), conf)
+	er2 := app.Route(r, context.Background(), conf)
 	if er2 != nil {
 		panic(er2)
 	}
-
-	fmt.Println(sv.ServerInfo(conf.Server))
-	if er3 := http.ListenAndServe(sv.Addr(conf.Server.Port), g); er3 != nil {
-		fmt.Println(er3.Error())
+	fmt.Println("start server")
+	server := ""
+	if conf.Server.Port != nil {
+		server = ":" + strconv.FormatInt(*conf.Server.Port, 10)
 	}
-}
 
-type bodyLogWriter struct {
-	gin.ResponseWriter
-	body *bytes.Buffer
-}
-
-func (w bodyLogWriter) Write(b []byte) (int, error) {
-	w.body.Write(b)
-	return w.ResponseWriter.Write(b)
-}
-
-func (w bodyLogWriter) WriteString(s string) (int, error) {
-	w.body.WriteString(s)
-	return w.ResponseWriter.WriteString(s)
-}
-
-func ginBodyLogMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		blw := &bodyLogWriter{body: bytes.NewBufferString("\n"), ResponseWriter: c.Writer}
-		c.Writer = blw
-		c.Next()
-		fmt.Println("Response body: " + blw.body.String())
+	if er3 := http.ListenAndServe(server, r); er3 != nil {
+		panic(er3)
 	}
+
 }

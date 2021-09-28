@@ -2,14 +2,21 @@ package app
 
 import (
 	"github.com/core-go/log"
-	mid "github.com/core-go/log/middleware"
-	sv "github.com/core-go/service"
-	"github.com/core-go/sql"
+	"github.com/core-go/storage"
+	"github.com/core-go/storage/s3"
 )
 
 type Root struct {
-	Server     sv.ServerConfig `mapstructure:"server"`
-	Sql        sql.Config      `mapstructure:"sql"`
-	Log        log.Config      `mapstructure:"log"`
-	MiddleWare mid.LogConfig   `mapstructure:"middleware"`
+	Server            ServerConfig   `mapstructure:"server"`
+	Log               log.Config     `mapstructure:"log"`
+	KeyFile           string         `mapstructure:"key_file"`
+	Storage           storage.Config `mapstructure:"storage"`
+	Provider          string         `mapstructure:"provider"`
+	GoogleCredentials string         `mapstructure:"google_credentials"`
+	AWS               s3.Config      `mapstructure:"aws"`
+}
+
+type ServerConfig struct {
+	Name string `mapstructure:"name"`
+	Port *int64 `mapstructure:"port"`
 }
