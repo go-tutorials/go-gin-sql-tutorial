@@ -1,41 +1,72 @@
 package app
 
 import (
-	"context"
+	"bytes"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	handler "go-gin-sql-rest-api/internal/Controller"
+	"go-gin-sql-rest-api/internal/model"
+	"time"
 )
 
-const (
-	GET    = "GET"
-	POST   = "POST"
-	PUT    = "PUT"
-	PATCH  = "PATCH"
-	DELETE = "DELETE"
-)
+func SetUpRouter() *gin.Engine {
+	r := gin.New()
+	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+		// your custom format
+		return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+			param.ClientIP,
+			param.TimeStamp.Format(time.RFC1123),
+			param.Method,
+			param.Path,
+			param.Request.Proto,
+			param.StatusCode,
+			param.Latency,
+			param.Request.UserAgent(),
+			param.ErrorMessage,
+		)
+	}))
 
-func Route(g *gin.Engine, ctx context.Context, root Root) error {
-	app, err := NewApp(ctx, root)
-	if err != nil {
-		return err
-	}
+	// Global middleware
+	// Logger middleware will write the logs to gin.DefaultWriter even if you set with GIN_MODE=release.
+	// By default gin.DefaultWriter = os.Stdout
+	r.Use(gin.Logger())
 
-	// g.GET("/health", app.HealthHandler.Check)
+	// Recovery middleware recovers from any panics and writes a 500 if there was one.
+	r.Use(gin.Recovery())
 
-	userPath := g.Group("/users")
+	r.Use(ginBodyLogMiddleware)
+
+	model.ConnectDB()
+	g := r.Group("/users")
 	{
-		userPath.GET("", app.UserHandler.GetAll)
-		userPath.GET("/:id", app.UserHandler.Load)
-		userPath.POST("", app.UserHandler.Insert)
-		userPath.PUT("/:id", app.UserHandler.Update)
-		userPath.PATCH("/:id", app.UserHandler.Patch)
-		userPath.DELETE("/:id", app.UserHandler.Delete)
+		g.GET("", handler.GetAll)
+		g.GET("/:id", handler.GetById)
+		g.POST("", handler.Insert)
+		g.PUT("/:id", handler.Update)
+		g.DELETE("/:id", handler.Delete)
 	}
+	return r
 
-	//r.HandleFunc(userPath+"/{id}", app.UserHandler.Load).Methods(GET)
-	//r.HandleFunc(userPath, app.UserHandler.Insert).Methods(POST)
-	//r.HandleFunc(userPath+"/{id}", app.UserHandler.Update).Methods(PUT)
-	//r.HandleFunc(userPath+"/{id}", app.UserHandler.Patch).Methods(PATCH)
-	//r.HandleFunc(userPath+"/{id}", app.UserHandler.Delete).Methods(DELETE)
+}
 
-	return nil
+type bodyLogWriter struct {
+	gin.ResponseWriter
+	body *bytes.Buffer
+}
+
+func (w bodyLogWriter) Write(b []byte) (int, error) {
+	w.body.Write(b)
+	return w.ResponseWriter.Write(b)
+}
+
+func ginBodyLogMiddleware(c *gin.Context) {
+	blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
+	c.Writer = blw
+	c.Next()
+	statusCode := c.Writer.Status()
+	if statusCode >= 400 {
+		//ok this is an request with error, let's make a record for it
+		// now print body (or log in your preferred way)
+		fmt.Println("Response body: " + blw.body.String())
+	}
 }
