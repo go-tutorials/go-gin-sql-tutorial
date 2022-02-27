@@ -22,7 +22,6 @@ func NewUserHandler(service UserService) *UserHandler {
 func (h *UserHandler) All(c *gin.Context) {
 	res, err := h.service.All(context.Background())
 	if err != nil {
-		c.Error(err)
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -38,7 +37,6 @@ func (h *UserHandler) Load(c *gin.Context) {
 
 	res, err := h.service.Load(context.Background(), id)
 	if err != nil {
-		c.Error(err)
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -47,31 +45,28 @@ func (h *UserHandler) Load(c *gin.Context) {
 
 func (h *UserHandler) Insert(c *gin.Context) {
 	var user User
-	err := c.ShouldBindJSON(&user)
+	er1 := c.ShouldBindJSON(&user)
 
 	defer c.Request.Body.Close()
-	if err != nil {
-		c.Error(err)
+	if er1 != nil {
+		c.String(http.StatusInternalServerError, er1.Error())
 		return
 	}
 
 	res, er2 := h.service.Insert(context.Background(), &user)
 	if er2 != nil {
-		c.Error(er2)
 		c.String(http.StatusInternalServerError, er2.Error())
 		return
-	} else {
-		c.JSON(http.StatusCreated, res)
 	}
+	c.JSON(http.StatusCreated, res)
 }
 
 func (h *UserHandler) Update(c *gin.Context) {
 	var user User
-	err := c.BindJSON(&user)
+	er1 := c.BindJSON(&user)
 	defer c.Request.Body.Close()
 
-	if err != nil {
-		c.Error(err)
+	if er1 != nil {
 		return
 	}
 
@@ -90,7 +85,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 
 	res, er2 := h.service.Update(context.Background(), &user)
 	if er2 != nil {
-		c.Error(er2)
+		c.String(http.StatusInternalServerError, er2.Error())
 		return
 	}
 	c.JSON(http.StatusOK, res)
@@ -122,7 +117,7 @@ func (h *UserHandler) Patch(c *gin.Context) {
 
 	res, er2 := h.service.Patch(context.Background(), json)
 	if er2 != nil {
-		c.Error(er2)
+		c.String(http.StatusInternalServerError, er2.Error())
 		return
 	}
 	c.JSON(http.StatusOK, res)
@@ -131,13 +126,13 @@ func (h *UserHandler) Patch(c *gin.Context) {
 func (h *UserHandler) Delete(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "user not found"})
+		c.String(http.StatusBadRequest, "Id cannot be empty")
 		return
 	}
 
 	res, err := h.service.Delete(context.Background(), id)
 	if err != nil {
-		c.Error(err)
+		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, res)
