@@ -19,30 +19,30 @@ func NewUserHandler(service UserService) *UserHandler {
 	return &UserHandler{service: service}
 }
 
-func (h *UserHandler) GetAll(c *gin.Context) {
-	result, err := h.service.All(context.Background())
+func (h *UserHandler) All(c *gin.Context) {
+	res, err := h.service.All(context.Background())
 	if err != nil {
 		c.Error(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error ": " don't get all users"})
+		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data ": result})
+	c.JSON(http.StatusOK, res)
 }
 
 func (h *UserHandler) Load(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error ": " user not found"})
+		c.String(http.StatusBadRequest, "Id cannot be empty")
 		return
 	}
 
-	result, err := h.service.Load(context.Background(), id)
+	res, err := h.service.Load(context.Background(), id)
 	if err != nil {
 		c.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error ": " data missing"})
+		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data ": result})
+	c.JSON(http.StatusOK, res)
 }
 
 func (h *UserHandler) Insert(c *gin.Context) {
@@ -55,14 +55,14 @@ func (h *UserHandler) Insert(c *gin.Context) {
 		return
 	}
 
-	_, er2 := h.service.Insert(context.Background(), &user)
+	res, er2 := h.service.Insert(context.Background(), &user)
 	if er2 != nil {
 		c.Error(er2)
+		c.String(http.StatusInternalServerError, er2.Error())
 		return
+	} else {
+		c.JSON(http.StatusCreated, res)
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Insert new user success",
-		"data": &user})
-
 }
 
 func (h *UserHandler) Update(c *gin.Context) {
@@ -77,24 +77,23 @@ func (h *UserHandler) Update(c *gin.Context) {
 
 	id := c.Param("id")
 	if len(id) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "user not found"})
+		c.String(http.StatusBadRequest, "Id cannot be empty")
 		return
 	}
 
 	if len(user.Id) == 0 {
 		user.Id = id
 	} else if id != user.Id {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Id not match"})
+		c.String(http.StatusBadRequest, "Id not match")
 		return
 	}
 
-	_, er2 := h.service.Update(context.Background(), &user)
+	res, er2 := h.service.Update(context.Background(), &user)
 	if er2 != nil {
 		c.Error(er2)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Update user success",
-		"data": &user})
+	c.JSON(http.StatusOK, res)
 }
 
 func (h *UserHandler) Patch(c *gin.Context) {
@@ -103,7 +102,6 @@ func (h *UserHandler) Patch(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Id cannot be empty")
 		return
 	}
-	ids := []string{"id"}
 
 	r := c.Request
 	var user User
@@ -116,18 +114,18 @@ func (h *UserHandler) Patch(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Id not match")
 		return
 	}
-	json, er1 := sv.BodyToJsonMap(r, user, body, ids, jsonMap)
+	json, er1 := sv.BodyToJsonMap(r, user, body, []string{"id"}, jsonMap)
 	if er1 != nil {
 		c.String(http.StatusInternalServerError, er1.Error())
 		return
 	}
 
-	result, er2 := h.service.Patch(context.Background(), json)
+	res, er2 := h.service.Patch(context.Background(), json)
 	if er2 != nil {
 		c.Error(er2)
 		return
 	}
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, res)
 }
 
 func (h *UserHandler) Delete(c *gin.Context) {
@@ -137,11 +135,10 @@ func (h *UserHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	_, err := h.service.Delete(context.Background(), id)
+	res, err := h.service.Delete(context.Background(), id)
 	if err != nil {
 		c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message ": " delete success",
-		"data ": true})
+	c.JSON(http.StatusOK, res)
 }

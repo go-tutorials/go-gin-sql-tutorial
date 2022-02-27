@@ -13,7 +13,7 @@ func Route(g *gin.Engine, ctx context.Context, conf Config) error {
 
 	userPath := g.Group("/users")
 	{
-		userPath.GET("", app.UserHandler.GetAll)
+		userPath.GET("", app.UserHandler.All)
 		userPath.GET("/:id", app.UserHandler.Load)
 		userPath.POST("", app.UserHandler.Insert)
 		userPath.PUT("/:id", app.UserHandler.Update)

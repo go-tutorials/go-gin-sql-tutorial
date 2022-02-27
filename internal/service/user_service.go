@@ -34,13 +34,13 @@ func (s *userService) All(ctx context.Context) (*[]User, error) {
 	if err != nil {
 		return nil, err
 	}
-	var result []User
+	var users []User
 	for rows.Next() {
 		var user User
 		err = rows.Scan(&user.Id, &user.Username, &user.Phone, &user.Email, &user.DateOfBirth)
-		result = append(result, user)
+		users = append(users, user)
 	}
-	return &result, nil
+	return &users, nil
 }
 
 func (s *userService) Load(ctx context.Context, id string) (*User, error) {
@@ -64,11 +64,11 @@ func (s *userService) Insert(ctx context.Context, user *User) (int64, error) {
 	if er0 != nil {
 		return -1, nil
 	}
-	result, er1 := stmt.ExecContext(ctx, user.Id, user.Username, user.Email, user.Phone, user.DateOfBirth)
+	res, er1 := stmt.ExecContext(ctx, user.Id, user.Username, user.Email, user.Phone, user.DateOfBirth)
 	if er1 != nil {
 		return -1, nil
 	}
-	return result.RowsAffected()
+	return res.RowsAffected()
 }
 
 func (s *userService) Update(ctx context.Context, user *User) (int64, error) {
@@ -77,11 +77,11 @@ func (s *userService) Update(ctx context.Context, user *User) (int64, error) {
 	if er0 != nil {
 		return -1, nil
 	}
-	result, er1 := stmt.ExecContext(ctx, user.Username, user.Email, user.Phone, user.DateOfBirth, user.Id)
+	res, er1 := stmt.ExecContext(ctx, user.Username, user.Email, user.Phone, user.DateOfBirth, user.Id)
 	if er1 != nil {
 		return -1, er1
 	}
-	return result.RowsAffected()
+	return res.RowsAffected()
 }
 
 func (s *userService) Patch(ctx context.Context, user map[string]interface{}) (int64, error) {
@@ -90,11 +90,11 @@ func (s *userService) Patch(ctx context.Context, user map[string]interface{}) (i
 	colMap := q.JSONToColumns(user, jsonColumnMap)
 	keys, _ := q.FindPrimaryKeys(userType)
 	query, args := q.BuildToPatch("users", colMap, keys, q.BuildParam)
-	result, err := s.DB.ExecContext(ctx, query, args...)
+	res, err := s.DB.ExecContext(ctx, query, args...)
 	if err != nil {
 		return -1, err
 	}
-	return result.RowsAffected()
+	return res.RowsAffected()
 }
 
 func (s *userService) Delete(ctx context.Context, id string) (int64, error) {
@@ -103,13 +103,9 @@ func (s *userService) Delete(ctx context.Context, id string) (int64, error) {
 	if er0 != nil {
 		return -1, nil
 	}
-	result, er1 := stmt.ExecContext(ctx, id)
+	res, er1 := stmt.ExecContext(ctx, id)
 	if er1 != nil {
 		return -1, er1
 	}
-	rowAffect, er2 := result.RowsAffected()
-	if er2 != nil {
-		return 0, er2
-	}
-	return rowAffect, nil
+	return res.RowsAffected()
 }

@@ -11,45 +11,16 @@ import (
 	"go-service/internal/service"
 )
 
-const (
-	CreateTable = `
-create table if not exists users (
-  id varchar(40) not null,
-  username varchar(120),
-  email varchar(120),
-  phone varchar(45),
-  date_of_birth date,
-  primary key (id)
-)`
-)
-
 type ApplicationContext struct {
 	HealthHandler *health.Handler
 	UserHandler   *handler.UserHandler
 }
 
-func NewApp(context context.Context, root Config) (*ApplicationContext, error) {
-	db, err := sql.OpenByConfig(root.Sql)
+func NewApp(context context.Context, conf Config) (*ApplicationContext, error) {
+	db, err := sql.OpenByConfig(conf.Sql)
 	if err != nil {
 		return nil, err
 	}
-
-	//stmtCreate := "create database if not exists masterdata"
-	//_, err = db.ExecContext(context, stmtCreate)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//stmtUseDB := "use masterdata"
-	//_, err = db.ExecContext(context, stmtUseDB)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//_, err = db.ExecContext(context, CreateTable)
-	//if err != nil {
-	//	return nil, err
-	//}
 
 	userService := service.NewUserService(db)
 	userHandler := handler.NewUserHandler(userService)
