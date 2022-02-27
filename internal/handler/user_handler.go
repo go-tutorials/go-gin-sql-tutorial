@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	sv "github.com/core-go/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -20,7 +19,7 @@ func NewUserHandler(service UserService) *UserHandler {
 }
 
 func (h *UserHandler) All(c *gin.Context) {
-	res, err := h.service.All(context.Background())
+	res, err := h.service.All(c.Request.Context())
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
@@ -35,7 +34,7 @@ func (h *UserHandler) Load(c *gin.Context) {
 		return
 	}
 
-	res, err := h.service.Load(context.Background(), id)
+	res, err := h.service.Load(c.Request.Context(), id)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
@@ -53,7 +52,7 @@ func (h *UserHandler) Insert(c *gin.Context) {
 		return
 	}
 
-	res, er2 := h.service.Insert(context.Background(), &user)
+	res, er2 := h.service.Insert(c.Request.Context(), &user)
 	if er2 != nil {
 		c.String(http.StatusInternalServerError, er2.Error())
 		return
@@ -67,6 +66,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 	defer c.Request.Body.Close()
 
 	if er1 != nil {
+		c.String(http.StatusInternalServerError, er1.Error())
 		return
 	}
 
@@ -83,7 +83,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 		return
 	}
 
-	res, er2 := h.service.Update(context.Background(), &user)
+	res, er2 := h.service.Update(c.Request.Context(), &user)
 	if er2 != nil {
 		c.String(http.StatusInternalServerError, er2.Error())
 		return
@@ -102,7 +102,11 @@ func (h *UserHandler) Patch(c *gin.Context) {
 	var user User
 	userType := reflect.TypeOf(user)
 	_, jsonMap, _ := sv.BuildMapField(userType)
-	body, _ := sv.BuildMapAndStruct(r, &user)
+	body, er0 := sv.BuildMapAndStruct(r, &user)
+	if er0 != nil {
+		c.String(http.StatusInternalServerError, er0.Error())
+		return
+	}
 	if len(user.Id) == 0 {
 		user.Id = id
 	} else if id != user.Id {
@@ -115,7 +119,7 @@ func (h *UserHandler) Patch(c *gin.Context) {
 		return
 	}
 
-	res, er2 := h.service.Patch(context.Background(), json)
+	res, er2 := h.service.Patch(r.Context(), json)
 	if er2 != nil {
 		c.String(http.StatusInternalServerError, er2.Error())
 		return
@@ -130,7 +134,7 @@ func (h *UserHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	res, err := h.service.Delete(context.Background(), id)
+	res, err := h.service.Delete(c.Request.Context(), id)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
