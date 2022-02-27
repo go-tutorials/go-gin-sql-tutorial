@@ -1,12 +1,6 @@
-# go-sql-rest-api
+# go-gin-sql-tutorial
 
 ## How to run
-#### Clone the repository
-```shell
-git clone https://github.com/go-tutorials/go-gin-sql-rest-api.git
-cd go-sql-rest-api
-```
-
 #### To run the application
 ```shell
 go run main.go

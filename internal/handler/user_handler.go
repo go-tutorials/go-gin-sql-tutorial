@@ -1,13 +1,14 @@
-package handlers
+package handler
 
 import (
 	"context"
 	sv "github.com/core-go/service"
 	"github.com/gin-gonic/gin"
-	. "go-service/internal/models"
-	. "go-service/internal/services"
 	"net/http"
 	"reflect"
+
+	. "go-service/internal/model"
+	. "go-service/internal/service"
 )
 
 type UserHandler struct {

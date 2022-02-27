@@ -5,13 +5,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Route(g *gin.Engine, ctx context.Context, root Config) error {
-	app, err := NewApp(ctx, root)
+func Route(g *gin.Engine, ctx context.Context, conf Config) error {
+	app, err := NewApp(ctx, conf)
 	if err != nil {
 		return err
 	}
-
-	// g.GET("/health", app.HealthHandler.Check)
 
 	userPath := g.Group("/users")
 	{
@@ -22,12 +20,6 @@ func Route(g *gin.Engine, ctx context.Context, root Config) error {
 		userPath.PATCH("/:id", app.UserHandler.Patch)
 		userPath.DELETE("/:id", app.UserHandler.Delete)
 	}
-
-	//r.HandleFunc(userPath+"/{id}", app.UserHandler.Load).Methods(GET)
-	//r.HandleFunc(userPath, app.UserHandler.Insert).Methods(POST)
-	//r.HandleFunc(userPath+"/{id}", app.UserHandler.Update).Methods(PUT)
-	//r.HandleFunc(userPath+"/{id}", app.UserHandler.Patch).Methods(PATCH)
-	//r.HandleFunc(userPath+"/{id}", app.UserHandler.Delete).Methods(DELETE)
 
 	return nil
 }

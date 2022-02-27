@@ -7,8 +7,8 @@ import (
 	"github.com/core-go/sql"
 	_ "github.com/lib/pq"
 
-	"go-service/internal/handlers"
-	"go-service/internal/services"
+	"go-service/internal/handler"
+	"go-service/internal/service"
 )
 
 const (
@@ -25,7 +25,7 @@ create table if not exists users (
 
 type ApplicationContext struct {
 	HealthHandler *health.Handler
-	UserHandler   *handlers.UserHandler
+	UserHandler   *handler.UserHandler
 }
 
 func NewApp(context context.Context, root Config) (*ApplicationContext, error) {
@@ -51,8 +51,8 @@ func NewApp(context context.Context, root Config) (*ApplicationContext, error) {
 	//	return nil, err
 	//}
 
-	userService := services.NewUserService(db)
-	userHandler := handlers.NewUserHandler(userService)
+	userService := service.NewUserService(db)
+	userHandler := handler.NewUserHandler(userService)
 
 	sqlChecker := s.NewHealthChecker(db)
 	healthHandler := health.NewHandler(sqlChecker)
