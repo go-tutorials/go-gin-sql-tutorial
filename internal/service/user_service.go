@@ -89,7 +89,7 @@ func (s *userService) Patch(ctx context.Context, user map[string]interface{}) (i
 	jsonColumnMap := q.MakeJsonColumnMap(userType)
 	colMap := q.JSONToColumns(user, jsonColumnMap)
 	keys, _ := q.FindPrimaryKeys(userType)
-	query, args := q.BuildToPatch("users", colMap, keys, q.BuildParam)
+	query, args := q.BuildToPatch("users", colMap, keys, q.BuildDollarParam)
 	res, err := s.DB.ExecContext(ctx, query, args...)
 	if err != nil {
 		return -1, err
