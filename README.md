@@ -157,7 +157,7 @@ package main
 
 import "github.com/core-go/config"
 
-type Root struct {
+type Config struct {
     DB DatabaseConfig `mapstructure:"db"`
 }
 
@@ -167,7 +167,7 @@ type DatabaseConfig struct {
 }
 
 func main() {
-    var conf Root
+    var conf Config
     err := config.Load(&conf, "configs/config")
     if err != nil {
         panic(err)
@@ -192,7 +192,7 @@ func main() {
 
     log.Initialize(conf.Log)
     r.Use(m.BuildContext)
-    logger := m.NewStructuredLogger()
+    logger := m.NewLogger()
     r.Use(m.Logger(conf.MiddleWare, log.InfoFields, logger))
     r.Use(m.Recover(log.ErrorMsg))
 }
