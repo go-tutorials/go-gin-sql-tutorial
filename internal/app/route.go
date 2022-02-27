@@ -5,15 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	GET    = "GET"
-	POST   = "POST"
-	PUT    = "PUT"
-	PATCH  = "PATCH"
-	DELETE = "DELETE"
-)
-
-func Route(g *gin.Engine, ctx context.Context, root Root) error {
+func Route(g *gin.Engine, ctx context.Context, root Config) error {
 	app, err := NewApp(ctx, root)
 	if err != nil {
 		return err

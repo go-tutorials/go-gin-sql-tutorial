@@ -19,7 +19,7 @@ func NewUserHandler(service UserService) *UserHandler {
 }
 
 func (h *UserHandler) GetAll(c *gin.Context) {
-	result, err := h.service.GetAll(context.Background())
+	result, err := h.service.All(context.Background())
 	if err != nil {
 		c.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error ": " don't get all users"})
@@ -99,33 +99,34 @@ func (h *UserHandler) Update(c *gin.Context) {
 func (h *UserHandler) Patch(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "user not found"})
+		c.String(http.StatusBadRequest, "Id cannot be empty")
 		return
 	}
 	ids := []string{"id"}
 
+	r := c.Request
 	var user User
 	userType := reflect.TypeOf(user)
-	_, jsonMap := sv.BuildMapField(userType)
-	body, _ := sv.BuildMapAndStruct(c.Request, &user)
+	_, jsonMap, _ := sv.BuildMapField(userType)
+	body, _ := sv.BuildMapAndStruct(r, &user)
 	if len(user.Id) == 0 {
 		user.Id = id
 	} else if id != user.Id {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Id not match"})
+		c.String(http.StatusBadRequest, "Id not match")
 		return
 	}
-	json, er1 := sv.BodyToJson(c.Request, user, body, ids, jsonMap, nil)
+	json, er1 := sv.BodyToJsonMap(r, user, body, ids, jsonMap)
 	if er1 != nil {
-		c.Error(er1)
+		c.String(http.StatusInternalServerError, er1.Error())
 		return
 	}
 
-	_, er2 := h.service.Patch(context.Background(), json)
+	result, er2 := h.service.Patch(context.Background(), json)
 	if er2 != nil {
 		c.Error(er2)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "user has patched", "data": ""})
+	c.JSON(http.StatusOK, result)
 }
 
 func (h *UserHandler) Delete(c *gin.Context) {

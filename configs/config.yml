@@ -1,11 +1,11 @@
 server:
-  name: go-postgresql-gin-rest-api
+  name: go-postgresql-tutorial
   port: 8080
 
 sql:
   driver: postgres
-  data_source_name: postgres://postgres:admin@123456@localhost:5432/demogo?sslmode=disable
-  # postgres://username:password@host:5432/database?sslmode=disable
+  data_source_name: postgres://postgres:abcd1234@localhost:5432/masterdata?sslmode=disable
+
 log:
   level: info
   duration: duration

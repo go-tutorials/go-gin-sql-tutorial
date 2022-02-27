@@ -4,12 +4,21 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	s "github.com/core-go/sql"
+	q "github.com/core-go/sql"
 	"reflect"
 	"strings"
 
 	. "go-service/internal/models"
 )
+
+type UserService interface {
+	All(ctx context.Context) (*[]User, error)
+	Load(ctx context.Context, id string) (*User, error)
+	Insert(ctx context.Context, user *User) (int64, error)
+	Update(ctx context.Context, user *User) (int64, error)
+	Patch(ctx context.Context, user map[string]interface{}) (int64, error)
+	Delete(ctx context.Context, id string) (int64, error)
+}
 
 type SqlUserService struct {
 	DB *sql.DB
@@ -19,9 +28,9 @@ func NewUserService(db *sql.DB) *SqlUserService {
 	return &SqlUserService{DB: db}
 }
 
-func (m *SqlUserService) GetAll(ctx context.Context) (*[]User, error) {
+func (s *SqlUserService) All(ctx context.Context) (*[]User, error) {
 	query := "select id, username, email, phone, date_of_birth from users"
-	rows, err := m.DB.QueryContext(ctx, query)
+	rows, err := s.DB.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -34,10 +43,10 @@ func (m *SqlUserService) GetAll(ctx context.Context) (*[]User, error) {
 	return &result, nil
 }
 
-func (m *SqlUserService) Load(ctx context.Context, id string) (*User, error) {
+func (s *SqlUserService) Load(ctx context.Context, id string) (*User, error) {
 	var user User
 	query := "select id, username, email, phone, date_of_birth from users where id = $1"
-	err := m.DB.QueryRowContext(ctx, query, id).Scan(&user.Id, &user.Username, &user.Email, &user.Phone, &user.DateOfBirth)
+	err := s.DB.QueryRowContext(ctx, query, id).Scan(&user.Id, &user.Username, &user.Email, &user.Phone, &user.DateOfBirth)
 	if err != nil {
 		errMsg := err.Error()
 		if strings.Compare(fmt.Sprintf(errMsg), "0 row(s) returned") == 0 {
@@ -49,9 +58,9 @@ func (m *SqlUserService) Load(ctx context.Context, id string) (*User, error) {
 	return &user, nil
 }
 
-func (m *SqlUserService) Insert(ctx context.Context, user *User) (int64, error) {
+func (s *SqlUserService) Insert(ctx context.Context, user *User) (int64, error) {
 	query := "insert into users (id, username, email, phone, date_of_birth) values ($1, $2, $3, $4, $5)"
-	stmt, er0 := m.DB.Prepare(query)
+	stmt, er0 := s.DB.Prepare(query)
 	if er0 != nil {
 		return -1, nil
 	}
@@ -62,9 +71,9 @@ func (m *SqlUserService) Insert(ctx context.Context, user *User) (int64, error) 
 	return result.RowsAffected()
 }
 
-func (m *SqlUserService) Update(ctx context.Context, user *User) (int64, error) {
+func (s *SqlUserService) Update(ctx context.Context, user *User) (int64, error) {
 	query := "update users set username = $1, email = $2, phone = $3, date_of_birth = $4 where id = $5"
-	stmt, er0 := m.DB.Prepare(query)
+	stmt, er0 := s.DB.Prepare(query)
 	if er0 != nil {
 		return -1, nil
 	}
@@ -75,18 +84,22 @@ func (m *SqlUserService) Update(ctx context.Context, user *User) (int64, error) 
 	return result.RowsAffected()
 }
 
-func (m *SqlUserService) Patch(ctx context.Context, user map[string]interface{}) (int64, error) {
+func (s *SqlUserService) Patch(ctx context.Context, user map[string]interface{}) (int64, error) {
 	userType := reflect.TypeOf(User{})
-	result, err := s.Patch(ctx, m.DB, "users", user, userType)
+	jsonColumnMap := q.MakeJsonColumnMap(userType)
+	colMap := q.JSONToColumns(user, jsonColumnMap)
+	keys, _ := q.FindPrimaryKeys(userType)
+	query, args := q.BuildToPatch("users", colMap, keys, q.BuildParam)
+	result, err := s.DB.ExecContext(ctx, query, args...)
 	if err != nil {
-		return result, err
+		return -1, err
 	}
-	return result, nil
+	return result.RowsAffected()
 }
 
-func (m *SqlUserService) Delete(ctx context.Context, id string) (int64, error) {
+func (s *SqlUserService) Delete(ctx context.Context, id string) (int64, error) {
 	query := "delete from users where id = $1"
-	stmt, er0 := m.DB.Prepare(query)
+	stmt, er0 := s.DB.Prepare(query)
 	if er0 != nil {
 		return -1, nil
 	}

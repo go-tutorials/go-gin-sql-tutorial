@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	var conf app.Root
+	var conf app.Config
 	er1 := config.Load(&conf, "configs/config")
 	if er1 != nil {
 		panic(er1)

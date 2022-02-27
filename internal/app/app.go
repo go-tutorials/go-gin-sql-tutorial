@@ -28,7 +28,7 @@ type ApplicationContext struct {
 	UserHandler   *handlers.UserHandler
 }
 
-func NewApp(context context.Context, root Root) (*ApplicationContext, error) {
+func NewApp(context context.Context, root Config) (*ApplicationContext, error) {
 	db, err := sql.OpenByConfig(root.Sql)
 	if err != nil {
 		return nil, err
