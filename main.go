@@ -1,63 +1,54 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"github.com/core-go/config"
-	sv "github.com/core-go/service"
-	"github.com/gin-gonic/gin"
 	"net/http"
 
+	"github.com/core-go/config"
+	"github.com/core-go/core"
+	"github.com/core-go/core/strings"
+	"github.com/core-go/log"
+	"github.com/core-go/log/convert"
+	"github.com/gin-gonic/gin"
+
 	"go-service/internal/app"
+	gl "go-service/pkg/gin"
 )
 
 func main() {
 	var conf app.Config
-	er1 := config.Load(&conf, "configs/config")
-	if er1 != nil {
-		panic(er1)
+	err := config.Load(&conf, "configs/config")
+	if err != nil {
+		panic(err)
 	}
-
+	conf.MiddleWare.Constants = convert.ToCamelCase(conf.MiddleWare.Constants)
+	conf.MiddleWare.Map = convert.ToCamelCase(conf.MiddleWare.Map)
 	g := gin.New()
 
-	g.Use(gin.Logger())
+	log.Initialize(conf.Log)
 
+	ginLog := gl.NewGinLogger(conf.MiddleWare,log.InfoFields, MaskLog)
+
+	g.Use(ginLog.BuildContextWithMask())
+	g.Use(ginLog.Logger())
 	g.Use(gin.Recovery())
 
-	g.Use(ginBodyLogMiddleware())
-
-	er2 := app.Route(g, context.Background(), conf)
-	if er2 != nil {
-		panic(er2)
+	err = app.Route(g, context.Background(), conf)
+	if err != nil {
+		panic(err)
 	}
 
-	fmt.Println(sv.ServerInfo(conf.Server))
-	if er3 := http.ListenAndServe(sv.Addr(conf.Server.Port), g); er3 != nil {
-		fmt.Println(er3.Error())
+	fmt.Println(core.ServerInfo(conf.Server))
+	if err = http.ListenAndServe(core.Addr(conf.Server.Port), g); err != nil {
+		fmt.Println(err.Error())
 	}
 }
 
-type bodyLogWriter struct {
-	gin.ResponseWriter
-	body *bytes.Buffer
-}
-
-func (w bodyLogWriter) Write(b []byte) (int, error) {
-	w.body.Write(b)
-	return w.ResponseWriter.Write(b)
-}
-
-func (w bodyLogWriter) WriteString(s string) (int, error) {
-	w.body.WriteString(s)
-	return w.ResponseWriter.WriteString(s)
-}
-
-func ginBodyLogMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		blw := &bodyLogWriter{body: bytes.NewBufferString("\n"), ResponseWriter: c.Writer}
-		c.Writer = blw
-		c.Next()
-		fmt.Println("Response body: " + blw.body.String())
+func MaskLog(name, s string) string {
+	if name == "mobileNo" {
+		return strings.Mask(s, 2, 2, "x")
+	} else {
+		return strings.Mask(s, 0, 5, "x")
 	}
 }

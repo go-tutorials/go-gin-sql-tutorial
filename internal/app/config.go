@@ -1,15 +1,16 @@
 package app
 
 import (
+	"github.com/core-go/core"
 	"github.com/core-go/log"
-	mid "github.com/core-go/log/middleware"
-	sv "github.com/core-go/service"
 	"github.com/core-go/sql"
+
+	"go-service/pkg/gin"
 )
 
 type Config struct {
-	Server     sv.ServerConf `mapstructure:"server"`
-	Sql        sql.Config    `mapstructure:"sql"`
-	Log        log.Config    `mapstructure:"log"`
-	MiddleWare mid.LogConfig `mapstructure:"middleware"`
+	Server     core.ServerConf `mapstructure:"server"`
+	Sql        sql.Config      `mapstructure:"sql"`
+	Log        log.Config      `mapstructure:"log"`
+	MiddleWare gin.LogConfig   `mapstructure:"middleware"`
 }

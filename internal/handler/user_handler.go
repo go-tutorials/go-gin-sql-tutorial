@@ -1,7 +1,7 @@
 package handler
 
 import (
-	sv "github.com/core-go/service"
+	"github.com/core-go/core"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"reflect"
@@ -101,8 +101,8 @@ func (h *UserHandler) Patch(c *gin.Context) {
 	r := c.Request
 	var user User
 	userType := reflect.TypeOf(user)
-	_, jsonMap, _ := sv.BuildMapField(userType)
-	body, er0 := sv.BuildMapAndStruct(r, &user)
+	_, jsonMap, _ := core.BuildMapField(userType)
+	body, er0 := core.BuildMapAndStruct(r, &user)
 	if er0 != nil {
 		c.String(http.StatusInternalServerError, er0.Error())
 		return
@@ -113,7 +113,7 @@ func (h *UserHandler) Patch(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Id not match")
 		return
 	}
-	json, er1 := sv.BodyToJsonMap(r, user, body, []string{"id"}, jsonMap)
+	json, er1 := core.BodyToJsonMap(r, user, body, []string{"id"}, jsonMap)
 	if er1 != nil {
 		c.String(http.StatusInternalServerError, er1.Error())
 		return
