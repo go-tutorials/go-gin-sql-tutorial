@@ -7,13 +7,13 @@ import (
 
 	"github.com/core-go/config"
 	"github.com/core-go/core"
-	"github.com/core-go/core/strings"
 	"github.com/core-go/log"
 	"github.com/core-go/log/convert"
+	gm "github.com/core-go/middleware/gin"
+	"github.com/core-go/middleware/strings"
 	"github.com/gin-gonic/gin"
 
 	"go-service/internal/app"
-	gl "go-service/pkg/gin"
 )
 
 func main() {
@@ -28,10 +28,10 @@ func main() {
 
 	log.Initialize(conf.Log)
 
-	ginLog := gl.NewGinLogger(conf.MiddleWare,log.InfoFields, MaskLog)
+	logger := gm.NewGinLogger(conf.MiddleWare, log.InfoFields, MaskLog)
 
-	g.Use(ginLog.BuildContextWithMask())
-	g.Use(ginLog.Logger())
+	g.Use(logger.BuildContextWithMask())
+	g.Use(logger.Logger())
 	g.Use(gin.Recovery())
 
 	err = app.Route(g, context.Background(), conf)

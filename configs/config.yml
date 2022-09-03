@@ -1,5 +1,5 @@
 server:
-  name: go-postgresql-tutorial
+  name: go-gin-sql-tutorial
   port: 8080
 
 sql:
@@ -23,8 +23,8 @@ middleware:
   size: size
   masks: mobileNo,creditCard
   constants:
-    app_id: "789"
-    service: promtpay
+    app_id: "123"
+    service: payment
   map:
     mobile_no: header.mobileNo
     credit_card: header.creditCard
