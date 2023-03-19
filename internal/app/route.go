@@ -13,12 +13,12 @@ func Route(g *gin.Engine, ctx context.Context, conf Config) error {
 
 	userPath := g.Group("/users")
 	{
-		userPath.GET("", app.UserHandler.All)
-		userPath.GET("/:id", app.UserHandler.Load)
-		userPath.POST("", app.UserHandler.Insert)
-		userPath.PUT("/:id", app.UserHandler.Update)
-		userPath.PATCH("/:id", app.UserHandler.Patch)
-		userPath.DELETE("/:id", app.UserHandler.Delete)
+		userPath.GET("", app.User.All)
+		userPath.GET("/:id", app.User.Load)
+		userPath.POST("", app.User.Insert)
+		userPath.PUT("/:id", app.User.Update)
+		userPath.PATCH("/:id", app.User.Patch)
+		userPath.DELETE("/:id", app.User.Delete)
 	}
 
 	return nil
