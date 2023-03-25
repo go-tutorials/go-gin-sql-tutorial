@@ -34,7 +34,7 @@ func main() {
 	g.Use(logger.Logger())
 	g.Use(gin.Recovery())
 
-	err = app.Route(g, context.Background(), conf)
+	err = app.Route(context.Background(), g, conf)
 	if err != nil {
 		panic(err)
 	}
