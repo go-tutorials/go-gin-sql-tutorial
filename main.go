@@ -9,9 +9,10 @@ import (
 	"github.com/core-go/core"
 	"github.com/core-go/log"
 	"github.com/core-go/log/convert"
-	gm "github.com/core-go/middleware/gin"
-	"github.com/core-go/middleware/strings"
+	gm "github.com/core-go/log/gin"
+	"github.com/core-go/log/strings"
 	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq"
 
 	"go-service/internal/app"
 )
@@ -28,7 +29,8 @@ func main() {
 
 	log.Initialize(conf.Log)
 
-	logger := gm.NewGinLogger(conf.MiddleWare, log.InfoFields, MaskLog)
+	formatter := gm.NewMaskLogger(Mask, Mask)
+	logger := gm.NewGinLogger(conf.MiddleWare, log.InfoFields, formatter, MaskLog)
 
 	g.Use(logger.BuildContextWithMask())
 	g.Use(logger.Logger())
@@ -51,4 +53,13 @@ func MaskLog(name, s string) string {
 	} else {
 		return strings.Mask(s, 0, 5, "x")
 	}
+}
+func Mask(name string, v interface{}) interface{}  {
+	if name == "phone" {
+		s, ok := v.(string)
+		if ok {
+			return strings.Mask(s, 0, 3, "*")
+		}
+	}
+	return v
 }
