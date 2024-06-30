@@ -18,31 +18,31 @@ import (
 )
 
 func main() {
-	var conf app.Config
-	err := config.Load(&conf, "configs/config")
+	var cfg app.Config
+	err := config.Load(&cfg, "configs/config")
 	if err != nil {
 		panic(err)
 	}
-	conf.MiddleWare.Constants = convert.ToCamelCase(conf.MiddleWare.Constants)
-	conf.MiddleWare.Map = convert.ToCamelCase(conf.MiddleWare.Map)
+	cfg.MiddleWare.Constants = convert.ToCamelCase(cfg.MiddleWare.Constants)
+	cfg.MiddleWare.Map = convert.ToCamelCase(cfg.MiddleWare.Map)
 	g := gin.New()
 
-	log.Initialize(conf.Log)
+	log.Initialize(cfg.Log)
 
-	formatter := gm.NewMaskLogger(Mask, Mask)
-	logger := gm.NewGinLogger(conf.MiddleWare, log.InfoFields, formatter, MaskLog)
+	formatter := gm.NewMaskLogger(cfg.MiddleWare.Request, Mask, Mask)
+	logger := gm.NewGinLogger(cfg.MiddleWare, log.InfoFields, formatter, MaskLog)
 
 	g.Use(logger.BuildContextWithMask())
 	g.Use(logger.Logger())
 	g.Use(gin.Recovery())
 
-	err = app.Route(context.Background(), g, conf)
+	err = app.Route(context.Background(), g, cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(core.ServerInfo(conf.Server))
-	if err = http.ListenAndServe(core.Addr(conf.Server.Port), g); err != nil {
+	fmt.Println(core.ServerInfo(cfg.Server))
+	if err = http.ListenAndServe(core.Addr(cfg.Server.Port), g); err != nil {
 		fmt.Println(err.Error())
 	}
 }
@@ -54,7 +54,7 @@ func MaskLog(name, s string) string {
 		return strings.Mask(s, 0, 5, "x")
 	}
 }
-func Mask(obj map[string]interface{}){
+func Mask(obj map[string]interface{}) {
 	v, ok := obj["phone"]
 	if ok {
 		s, ok2 := v.(string)

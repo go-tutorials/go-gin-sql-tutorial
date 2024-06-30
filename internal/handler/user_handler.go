@@ -39,7 +39,12 @@ func (h *UserHandler) Load(c *gin.Context) {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, res)
+	if res == nil {
+		c.JSON(http.StatusNotFound, res)
+	} else {
+		c.JSON(http.StatusOK, res)
+	}
+
 }
 
 func (h *UserHandler) Insert(c *gin.Context) {
@@ -57,7 +62,11 @@ func (h *UserHandler) Insert(c *gin.Context) {
 		c.String(http.StatusInternalServerError, er2.Error())
 		return
 	}
-	c.JSON(http.StatusCreated, res)
+	if res > 0 {
+		c.JSON(http.StatusCreated, user)
+	} else {
+		c.JSON(http.StatusConflict, res)
+	}
 }
 
 func (h *UserHandler) Update(c *gin.Context) {
@@ -88,7 +97,13 @@ func (h *UserHandler) Update(c *gin.Context) {
 		c.String(http.StatusInternalServerError, er2.Error())
 		return
 	}
-	c.JSON(http.StatusOK, res)
+	if res > 0 {
+		c.JSON(http.StatusOK, user)
+	} else if res == 0 {
+		c.JSON(http.StatusNotFound, user)
+	} else {
+		c.JSON(http.StatusConflict, res)
+	}
 }
 
 func (h *UserHandler) Patch(c *gin.Context) {
@@ -124,7 +139,13 @@ func (h *UserHandler) Patch(c *gin.Context) {
 		c.String(http.StatusInternalServerError, er2.Error())
 		return
 	}
-	c.JSON(http.StatusOK, res)
+	if res > 0 {
+		c.JSON(http.StatusOK, json)
+	} else if res == 0 {
+		c.JSON(http.StatusNotFound, json)
+	} else {
+		c.JSON(http.StatusConflict, res)
+	}
 }
 
 func (h *UserHandler) Delete(c *gin.Context) {
@@ -139,5 +160,9 @@ func (h *UserHandler) Delete(c *gin.Context) {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, res)
+	if res > 0 {
+		c.JSON(http.StatusOK, res)
+	} else {
+		c.JSON(http.StatusNotFound, res)
+	}
 }
