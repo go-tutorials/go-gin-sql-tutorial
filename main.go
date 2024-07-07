@@ -6,11 +6,11 @@ import (
 	"net/http"
 
 	"github.com/core-go/config"
-	"github.com/core-go/core"
-	"github.com/core-go/log"
+	"github.com/core-go/core/server"
 	"github.com/core-go/log/convert"
 	gm "github.com/core-go/log/gin"
 	"github.com/core-go/log/strings"
+	"github.com/core-go/log/zap"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 
@@ -41,8 +41,8 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println(core.ServerInfo(cfg.Server))
-	if err = http.ListenAndServe(core.Addr(cfg.Server.Port), g); err != nil {
+	fmt.Println(server.ServerInfo(cfg.Server))
+	if err = http.ListenAndServe(server.Addr(cfg.Server.Port), g); err != nil {
 		fmt.Println(err.Error())
 	}
 }

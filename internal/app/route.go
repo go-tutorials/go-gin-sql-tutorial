@@ -5,8 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Route(ctx context.Context, g *gin.Engine, conf Config) error {
-	app, err := NewApp(ctx, conf)
+func Route(ctx context.Context, g *gin.Engine, cfg Config) error {
+	app, err := NewApp(ctx, cfg)
 	if err != nil {
 		return err
 	}

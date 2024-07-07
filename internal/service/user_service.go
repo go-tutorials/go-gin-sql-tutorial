@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	q "github.com/core-go/sql"
 	"reflect"
 	"strings"
+
+	q "github.com/core-go/sql"
 
 	. "go-service/internal/model"
 )

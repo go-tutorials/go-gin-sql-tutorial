@@ -1,10 +1,11 @@
 package handler
 
 import (
-	"github.com/core-go/core"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"reflect"
+
+	"github.com/core-go/core"
+	"github.com/gin-gonic/gin"
 
 	. "go-service/internal/model"
 	. "go-service/internal/service"
@@ -100,7 +101,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 	if res > 0 {
 		c.JSON(http.StatusOK, user)
 	} else if res == 0 {
-		c.JSON(http.StatusNotFound, user)
+		c.JSON(http.StatusNotFound, res)
 	} else {
 		c.JSON(http.StatusConflict, res)
 	}
@@ -142,7 +143,7 @@ func (h *UserHandler) Patch(c *gin.Context) {
 	if res > 0 {
 		c.JSON(http.StatusOK, json)
 	} else if res == 0 {
-		c.JSON(http.StatusNotFound, json)
+		c.JSON(http.StatusNotFound, res)
 	} else {
 		c.JSON(http.StatusConflict, res)
 	}
